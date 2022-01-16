@@ -40,12 +40,12 @@ module.exports = {
         allowNull: false,
         type: DataTypes.DATE
       }
-    }, {
-      uniqueKeys : {
-        Items_unique: {
-          fields: ['movieId', 'celebrityId', 'roleId']
-        }
-      }
+    // }, {
+    //   uniqueKeys : {
+    //     Items_unique: {
+    //       fields: ['movieId', 'celebrityId', 'roleId']
+    //     }
+    //   }
     });
   },
   down: async (queryInterface, DataTypes) => {

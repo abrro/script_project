@@ -26,9 +26,15 @@ function authToken(req, res, next) {
 }
 
 const scheme = Joi.object({
-    name: Joi.string().max(20).required(),
+    name: Joi.string().trim().max(40).required(),
     email: Joi.string().email().required(),
-    password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
+    password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).required(),
+    role: Joi.string().valid('admin','content_creator').required()
+});
+
+const updateScheme = Joi.object({
+    name: Joi.string().trim().max(40).required(),
+    email: Joi.string().email().required(),
     role: Joi.string().valid('admin','content_creator').required()
 });
 
@@ -94,22 +100,31 @@ route.put('/users/:id', (req, res) => {
     Users.findOne({ where: { id: req.user.userId } })
         .then( usr => {
             if (usr.role == 'admin') {
-                const result = scheme.validate(req.body);
+                const result = updateScheme.validate(req.body);
                 const { value, error } = result; 
                 const valid = error == null;
 
                 if(!valid){
                     res.status(422).json({ msg : error.details[0].message });
                 }else{
-                    req.body.password = bcrypt.hashSync(req.body.password, 10);
-                    Users.update(req.body, { where: { id: id } })
-                    .then( num => {
-                        if (num == 1){
-                            res.status(200).json({msg : "Update successful"});
-                        } else {
-                            res.status(404).json({msg : "Cannot delete category with id :" + id + ". Resource might not exist."});
+                    Users.findByPk(id)
+                    .then( rows => {
+                        userBody = {
+                            name : req.body.name,
+                            email : req.body.email,
+                            password : rows.password,
+                            role : req.body.role
                         }
-                    } )
+                        Users.update(userBody, { where: { id: id } })
+                        .then( num => {
+                            if (num == 1){
+                                res.status(200).json({msg : "Update successful"});
+                            } else {
+                                res.status(404).json({msg : "Cannot update user with id :" + id + ". Resource might not exist."});
+                            }
+                        })
+                        .catch( err => res.status(500).json(err) );
+                    })
                     .catch( err => res.status(500).json(err) );
                 }
             } else {
@@ -130,7 +145,7 @@ route.delete('/users/:id', (req, res) => {
                         if (num == 1){
                             res.status(200).json({msg : "Deletion successful"});
                         } else {
-                            res.status(404).json({msg : "Cannot delete category with id :" + id + ". Resource might not exist."});
+                            res.status(404).json({msg : "Cannot delete user with id :" + id + ". Resource might not exist."});
                         }
                     } )
                     .catch( err => res.status(500).json(err) );

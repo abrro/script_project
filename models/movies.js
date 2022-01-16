@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       this.belongsTo(models.Categories, {foreignKey: 'categoryId', as: 'category'});
       this.hasMany(models.Reviews, { foreignKey: 'movieId', as: 'reviews', onDelete: 'cascade', hooks: true });
       
-      //this.belongsToMany(models.Celebrities, {through: 'Crew', foreignKey: 'movieId', as: 'celebrities'});
+      this.belongsToMany(models.Celebrities, {through: 'Crew', foreignKey: 'movieId', as: 'celebrities'});
       this.belongsToMany(models.Roles, {through: 'Crew', foreignKey: 'movieId', as: 'roles'});
     }
   };

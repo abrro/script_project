@@ -27,7 +27,7 @@ function authToken(req, res, next) {
 route.use(authToken);
 
 const scheme = Joi.object({
-    label: Joi.string().max(20).required()
+    label: Joi.string().trim().max(40).required()
 });
 
 route.get('/categories', (req, res) => {

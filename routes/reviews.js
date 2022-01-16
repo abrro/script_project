@@ -27,8 +27,8 @@ function authToken(req, res, next) {
 route.use(authToken);
 
 const scheme = Joi.object({
-    comment : Joi.string().max(200).required(),
-    stars: Joi.number().integer().min(1).max(10)
+    comment : Joi.string().trim().max(200).required(),
+    stars: Joi.number().integer().min(1).max(10).required()
 });
 
 route.get('/reviews', (req, res) => {
@@ -92,7 +92,7 @@ route.put('/reviews/:id', (req, res) => {
                         if (num == 1){
                             res.status(200).json({msg : "Update successful"});
                         } else {
-                            res.status(404).json({msg : "Cannot delete category with id :" + id + ". Resource might not exist."});
+                            res.status(404).json({msg : "Cannot update review with id :" + id + ". Resource might not exist."});
                         }
                     } )
                     .catch( err => res.status(500).json(err) );;
@@ -115,7 +115,7 @@ route.delete('/reviews/:id', (req, res) => {
                         if (num == 1){
                             res.status(200).json({msg : "Deletion successful"});
                         } else {
-                            res.status(404).json({msg : "Cannot delete category with id :" + id + ". Resource might not exist."});
+                            res.status(404).json({msg : "Cannot delete review with id :" + id + ". Resource might not exist."});
                         }
                     } )
                     .catch( err => res.status(500).json(err) );

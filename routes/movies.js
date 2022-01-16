@@ -1,5 +1,5 @@
 const express = require('express');
-const { sequelize, Movies, Users, Roles, Celebrities } = require('../models');
+const { sequelize, Movies, Users, Roles, Celebrities, Categories, Crew } = require('../models');
 const jwt = require('jsonwebtoken');
 const JoiBase = require('joi');
 const JoiDate = require('@hapi/joi-date');
@@ -29,16 +29,18 @@ function authToken(req, res, next) {
 route.use(authToken);
 
 const scheme = Joi.object({
-    title: Joi.string().max(120).required(),
+    title: Joi.string().trim().max(150).required(),
     synopsis: Joi.string().min(50).max(200).required(),
     release_date: Joi.date().format("YYYY-MM-DD").required(),
     categoryId: Joi.number().integer().required()
 });
 
 route.get('/movies', (req, res) => {
-    Movies.findAll()
-        .then( rows => res.json(rows) )
-        .catch( err => res.status(500).json(err) );
+    Movies.findAll({
+        include: ['category']
+    })
+    .then( rows => res.json(rows) )
+    .catch( err => res.status(500).json(err) );
 });
 
 route.get('/category/:id/movies', (req, res) => {
@@ -50,7 +52,7 @@ route.get('/category/:id/movies', (req, res) => {
 route.get('/movies/:id', (req, res) => {
     const id = req.params.id;
 
-    Movies.findAll({
+    Movies.findOne({
         where: {
             id: id
         },
@@ -67,17 +69,14 @@ route.get('/movies/:id', (req, res) => {
                     attributes: []
                 }
             }]
-        }]
+        }, 'category']
     })
     .then( rows => res.json(rows) )
     .catch( err => res.status(500).json(err) );
 });
 
 route.post('/movies', (req, res) => {
-
-    //prvo proveriti da li postoji kategorija u kojoj se pravi movie
-    //da li praviti objekte ovde ili to kroz body kontrolisati
-    
+      
     Users.findOne({ where: { id: req.user.userId } })
         .then( usr => {
             if (usr.role = 'admin' || 'content_creator') {
@@ -119,7 +118,7 @@ route.put('/movies/:id', (req, res) => {
                         if (num == 1){
                             res.status(200).json({msg : "Update successful"});
                         } else {
-                            res.status(404).json({msg : "Cannot delete category with id :" + id + ". Resource might not exist."});
+                            res.status(404).json({msg : "Cannot update movie with id :" + id + ". Resource might not exist."});
                         }
                     } )
                     .catch( err => res.status(500).json(err) );
@@ -142,10 +141,27 @@ route.delete('/movies/:id', (req, res) => {
                         if (num == 1){
                             res.status(200).json({msg : "Deletion successful"});
                         } else {
-                            res.status(404).json({msg : "Cannot delete category with id :" + id + ". Resource might not exist."});
+                            res.status(404).json({msg : "Cannot delete movie with id :" + id + ". Resource might not exist."});
                         }
                     } )
                     .catch( err => res.status(500).json(err) );
+            } else {
+                res.status(403).json({ msg: "Invalid credentials"});
+            }
+        })
+        .catch( err => res.status(500).json(err) );
+});
+
+route.post('/movies/crew', (req, res) => {
+      
+    Users.findOne({ where: { id: req.user.userId } })
+        .then( usr => {
+            if (usr.role = 'admin' || 'content_creator') {
+                console.log(req.body);
+
+                Crew.bulkCreate(req.body)
+                .then( rows => res.json(rows) )
+                .catch( err => res.status(500).json(err) );
             } else {
                 res.status(403).json({ msg: "Invalid credentials"});
             }

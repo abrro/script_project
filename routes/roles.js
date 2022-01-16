@@ -27,7 +27,7 @@ function authToken(req, res, next) {
 route.use(authToken);
 
 const scheme = Joi.object({
-    role: Joi.string().max(20).required()
+    role: Joi.string().trim().max(20).required()
 });
 
 route.get('/roles', (req, res) => {
@@ -78,7 +78,7 @@ route.put('/roles/:id', (req, res) => {
                         if (num == 1){
                             res.status(200).json({msg : "Update successful"});
                         } else {
-                            res.status(404).json({msg : "Cannot delete category with id : " + id + ". Resource might not exist."});
+                            res.status(404).json({msg : "Cannot update role with id : " + id + ". Resource might not exist."});
                         }
                     } )
                     .catch( err => res.status(500).json(err) );
@@ -101,7 +101,7 @@ route.delete('/roles/:id', (req, res) => {
                         if (num == 1){
                             res.status(200).json({msg : "Deletion successful"});
                         } else {
-                            res.status(404).json({msg : "Cannot delete category with id : " + id + ". Resource might not exist."});
+                            res.status(404).json({msg : "Cannot delete role with id : " + id + ". Resource might not exist."});
                         }
                     } )
                     .catch( err => res.status(500).json(err) );

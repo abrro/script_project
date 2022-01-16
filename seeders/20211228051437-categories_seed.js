@@ -3,12 +3,27 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     const fields = [{
-      label : 'horror',
+      label : 'Horror',
       createdAt: new Date(),
       updatedAt:  new Date()
     },
     {
-      label : 'drama',
+      label : 'Drama',
+      createdAt: new Date(),
+      updatedAt:  new Date()
+    },
+    {
+      label : 'Musical',
+      createdAt: new Date(),
+      updatedAt:  new Date()
+    },
+    {
+      label : 'Comedy',
+      createdAt: new Date(),
+      updatedAt:  new Date()
+    },
+    {
+      label : 'Action',
       createdAt: new Date(),
       updatedAt:  new Date()
     }]

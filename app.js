@@ -5,6 +5,7 @@ const categories = require('./routes/categories');
 const movies = require('./routes/movies');
 const celebrities = require('./routes/celebrities');
 const reviews = require('./routes/reviews');
+const roles = require('./routes/roles')
 const path = require('path');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
@@ -16,6 +17,7 @@ app.use('/api', categories);
 app.use('/api', movies);
 app.use('/api', celebrities);
 app.use('/api', reviews);
+app.use('/api', roles);
 
 function getCookies(req) {
     if (req.headers.cookie == null) return {};
@@ -47,19 +49,13 @@ function authToken(req, res, next) {
     });
 }
 
-
-// app.get('/categories', (req, res) => {
-//     res.sendFile('categories.html', { root: './static/categories' });
-// });
-
 app.get('/login', (req, res) => {
-    res.sendFile('login.html', { root: './static/auth' });
+    res.sendFile('login.html', { root: './static' });
 });
 
 app.get('/', authToken, (req, res) => {
     res.sendFile('index.html', { root: './static' });
 });
-
 
 app.use(express.static(path.join(__dirname, 'static')));
 

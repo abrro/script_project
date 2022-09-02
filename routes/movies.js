@@ -1,8 +1,9 @@
 const express = require('express');
-const { sequelize, Movies, Users, Roles, Celebrities, Categories, Crew } = require('../models');
+const { sequelize, Movies, Users, Roles, Celebrities, Categories, Moviegroups, Reviews } = require('../models');
 const jwt = require('jsonwebtoken');
 const JoiBase = require('joi');
 const JoiDate = require('@hapi/joi-date');
+const { Op } = require('sequelize');
 const Joi = JoiBase.extend(JoiDate);
 require('dotenv').config();
 
@@ -13,8 +14,8 @@ route.use(express.urlencoded({ extended: true }));
 function authToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-  
-    if (token == null) return res.status(401).json({ msg: err });
+    
+    if (token == null) return res.status(401).json({ msg: 'Not authenticated' });
   
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
     
@@ -49,37 +50,119 @@ route.get('/category/:id/movies', (req, res) => {
         .catch( err => res.status(500).json(err) );
 });
 
-route.get('/movies/:id', (req, res) => {
-    const id = req.params.id;
+// route.get('/movies/search', (req, res) => {
+//     Movies.findAll({where : {title : {[Op.like] : `%${req.query.title.toLowerCase()}%`}}, include : ['category']})
+//         .then( rows => res.json(rows) )
+//         .catch( err => res.status(500).json(err) );
+// });
 
-    Movies.findOne({
-        where: {
-            id: id
-        },
-        include: [{
-            model: Roles,
-            as: 'roles',
-            through: {
-                attributes: []
-            },
-            include: [{
-                model: Celebrities,
-                as: 'celebrities',
-                through: {
-                    attributes: []
-                }
-            }]
-        }, 'category']
-    })
-    .then( rows => res.json(rows) )
-    .catch( err => res.status(500).json(err) );
-});
+// route.get('/movies/count/search', (req, res) => {
+//     Movies.count({where : {title : {[Op.like] : `%${req.query.title.toLowerCase()}%`}}})
+//         .then( rows => res.json(rows) )
+//         .catch( err => res.status(500).json(err) );
+// });
+
+// route.get('/movies/page/:page/search', (req, res) => {
+//     Movies.findAll({where : {title : {[Op.like] : `%${req.query.title.toLowerCase()}%`}},
+//                             offset : (req.params.page - 1) * 10,
+//                             limit : 10,
+//                             include : ['category']})
+//         .then( rows => res.json(rows) )
+//         .catch( err => res.status(500).json(err) );
+// });
+
+// route.get('/movies/trending', (req, res) => {
+//     Movies.findAll({
+//         attributes: {
+//           include: [
+//              [sequelize.fn('COUNT', sequelize.col('reviews.id')), 'reviewsCount']
+//           ]
+//         },
+//         include: [{
+//           attributes: [],
+//           model : Reviews,
+//           as : 'reviews',
+//           duplicating: false
+//         }],
+//         group: ['Movies.id'],
+//         order: [[sequelize.col("reviewsCount"), "DESC"]],
+//         limit: 10
+//       })
+//       .then( rows => res.json(rows) )
+//       .catch( err => res.status(500).json(err) );
+// });
+
+// route.get('/movies/toprated', (req, res) => {
+//     Movies.findAll({
+//         attributes: {
+//           include: [
+//              [sequelize.fn('AVG', sequelize.col('reviews.rating')), 'avgRating']
+//           ]
+//         },
+//         include: [{
+//           attributes: [],
+//           model : Reviews,
+//           as : 'reviews',
+//           duplicating: false
+//         }],
+//         group: ['Movies.id'],
+//         order: [[sequelize.col("avgRating"), "DESC"]],
+//         limit: 10
+//       })
+//       .then( rows => res.json(rows) )
+//       .catch( err => res.status(500).json(err) );
+// });
+
+// route.get('/trending2', (req, res) => {
+//     Movies.findAll({
+//         attributes: {
+//             include : [
+//             [sequelize.literal('(SELECT COUNT(*) FROM Reviews WHERE Reviews.movieId = Movies.id)'), 'ReviewCount']
+//             ]
+//         },
+//         order: [[sequelize.literal('ReviewCount'), 'DESC']]
+//     })
+//       .then( rows => res.json(rows) )
+//       .catch( err => res.status(500).json(err) );
+// });
+
+// route.get('/movies/:id', (req, res) => {
+//     const id = req.params.id;
+
+//     Movies.findOne({
+//         where: {
+//             id: id
+//         },
+//         include: [{
+//             model: Roles,
+//             as: 'roles',
+//             through: {
+//                 where: {
+//                     movieId: id
+//                 },
+//                 attributes: []
+//             },
+//             include: [{
+//                 model: Celebrities,
+//                 as: 'celebrities',
+//                 through: {
+//                     where: {
+//                         movieId: id
+//                     },
+//                     attributes: []
+//                 }
+//             }]
+//         }, 'category']
+//     })
+//     .then( rows => res.json(rows) )
+//     .catch( err => res.status(500).json(err) );
+// });
 
 route.post('/movies', (req, res) => {
       
     Users.findOne({ where: { id: req.user.userId } })
         .then( usr => {
-            if (usr.role = 'admin' || 'content_creator') {
+            if (usr.role == 'admin' || 'content_creator') {
             
                 const result = scheme.validate(req.body);
                 const { value, error } = result; 
@@ -104,7 +187,7 @@ route.put('/movies/:id', (req, res) => {
 
     Users.findOne({ where: { id: req.user.userId } })
         .then( usr => {
-            if (usr.role = 'admin' || 'content_creator') {
+            if (usr.role == 'admin' || 'content_creator') {
                
                 const result = scheme.validate(req.body);
                 const { value, error } = result; 
@@ -135,7 +218,7 @@ route.delete('/movies/:id', (req, res) => {
 
     Users.findOne({ where: { id: req.user.userId } })
         .then( usr => {
-            if (usr.role = 'admin' || 'content_creator') {
+            if (usr.role == 'admin' || 'content_creator') {
                 Movies.destroy({ where: { id: id } })
                     .then( num => {
                         if (num == 1){
@@ -156,10 +239,15 @@ route.post('/movies/crew', (req, res) => {
       
     Users.findOne({ where: { id: req.user.userId } })
         .then( usr => {
-            if (usr.role = 'admin' || 'content_creator') {
+            if (usr.role == 'admin' || 'content_creator') {
+                req.body.forEach(el => {
+                   el.createdAt = new Date();
+                   el.updatedAt = new Date();
+                });
+
                 console.log(req.body);
 
-                Crew.bulkCreate(req.body)
+                Moviegroups.bulkCreate(req.body)
                 .then( rows => res.json(rows) )
                 .catch( err => res.status(500).json(err) );
             } else {

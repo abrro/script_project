@@ -96,9 +96,7 @@ function init() {
                         var obj = {
                             movieId : 0,
                             celebrityId : 0,
-                            roleId : 1,
-                            createdAt : Date.now(),
-                            updatedAt : Date.now()
+                            roleId : 1
                         };
                         obj.movieId = el.id;
                         obj.celebrityId = parseInt(elem);
@@ -108,9 +106,7 @@ function init() {
                         var obj = {
                             movieId : 0,
                             celebrityId : 0,
-                            roleId : 2,
-                            createdAt : Date.now(),
-                            updatedAt : Date.now()
+                            roleId : 2
                         };
                         obj.movieId = el.id;
                         obj.celebrityId = parseInt(elem);
@@ -120,9 +116,7 @@ function init() {
                         var obj = {
                             movieId : 0,
                             celebrityId : 0,
-                            roleId : 3,
-                            createdAt : Date.now(),
-                            updatedAt: Date.now()
+                            roleId : 3
                         };
                         obj.movieId = el.id;
                         obj.celebrityId = parseInt(elem);

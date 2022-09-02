@@ -1,5 +1,5 @@
 const express = require('express');
-const { sequelize, Celebrities, Users } = require('../models');
+const { sequelize, Celebrities, Users, Roles, Movies } = require('../models');
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
 require('dotenv').config();
@@ -12,7 +12,7 @@ function authToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
   
-    if (token == null) return res.status(401).json({ msg: err });
+    if (token == null) return res.status(401).json({ msg: 'Not authenticated' });
   
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
     
@@ -28,7 +28,7 @@ route.use(authToken);
 
 const scheme = Joi.object({
     name : Joi.string().trim().max(40).required(),
-    lastname: Joi.string().trim().max(40).required(),
+    lastname: Joi.string().trim().max(40).required()
 });
 
 route.get('/celebrities', (req, res) => {
@@ -43,19 +43,52 @@ route.get('/movie/:id/celebrities', (req, res) => {
         .catch( err => res.status(500).json(err) );
 });
 
-route.get('/celebrities/:id', (req, res) => {
-    const id = req.params.id;
+// route.get('/celebrities/:id', (req, res) => {
+//     const id = req.params.id;
 
-    Celebrities.findByPk(id)
-        .then( rows => res.json(rows) )
-        .catch( err => res.status(500).json(err) );
-});
+//     Celebrities.findByPk(id)
+//         .then( rows => res.json(rows) )
+//         .catch( err => res.status(500).json(err) );
+// });
+
+// route.get('/celebrities/:id', (req, res) => {
+//     const id = req.params.id;
+
+//     Celebrities.findOne({
+//         where: {
+//             id: id
+//         },
+//         include: [{
+//             model: Roles,
+//             as: 'roles',
+//             through: {
+//                 where: {
+//                     celebrityId: id
+//                 },
+//                 attributes: []
+//             },
+//             include: [{
+//                 model: Movies,
+//                 as: 'movies',
+//                 attributes: ['id', 'title'],
+//                 through: {
+//                     where: {
+//                         celebrityId: id
+//                     },
+//                     attributes: []
+//                 }
+//             }]
+//         }]
+//     })
+//     .then( rows => res.json(rows) )
+//     .catch( err => res.status(500).json(err) );
+// });
 
 route.post('/celebrities', (req, res) => {
     
     Users.findOne({ where: { id: req.user.userId } })
         .then( usr => {
-            if (usr.role = 'admin' || 'content_creator') {
+            if (usr.role == 'admin' || 'content_creator') {
                 const result = scheme.validate(req.body);
                 const { value, error } = result; 
                 const valid = error == null;
@@ -79,7 +112,7 @@ route.put('/celebrities/:id', (req, res) => {
 
     Users.findOne({ where: { id: req.user.userId } })
         .then( usr => {
-            if (usr.role = 'admin' || 'content_creator') {
+            if (usr.role == 'admin' || 'content_creator') {
                 const result = scheme.validate(req.body);
                 const { value, error } = result; 
                 const valid = error == null;
@@ -109,7 +142,7 @@ route.delete('/celebrities/:id', (req, res) => {
 
     Users.findOne({ where: { id: req.user.userId } })
         .then( usr => {
-            if (usr.role = 'admin' || 'content_creator') {
+            if (usr.role == 'admin' || 'content_creator') {
                 Celebrities.destroy({ where: { id: id } })
                     .then( num => {
                         if (num == 1){

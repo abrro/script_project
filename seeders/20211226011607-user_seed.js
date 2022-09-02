@@ -31,15 +31,15 @@ module.exports = {
       name : 'John',
       email: 'johndoe@gmail.com',
       password: bcrypt.hashSync('john1234', 10),
-      role : 'content_creator',
+      role : 'user',
       createdAt:  new Date(),
       updatedAt:  new Date()
     },
     {
-      name : 'Jane',
-      email: 'jane@gmail.com',
-      password: bcrypt.hashSync('jane1234', 10),
-      role : 'content_creator',
+      name : 'User',
+      email: 'user@gmail.com',
+      password: bcrypt.hashSync('user1234', 10),
+      role : 'user',
       createdAt:  new Date(),
       updatedAt:  new Date()
     }]

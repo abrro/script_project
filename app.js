@@ -5,19 +5,30 @@ const categories = require('./routes/categories');
 const movies = require('./routes/movies');
 const celebrities = require('./routes/celebrities');
 const reviews = require('./routes/reviews');
-const roles = require('./routes/roles')
+const roles = require('./routes/roles');
+const movielists = require('./routes/movielist');
+const guest_routes = require('./routes/guest');
 const path = require('path');
 const jwt = require('jsonwebtoken');
+const cors = require('cors');
 require('dotenv').config();
 
-const app = express();
+var corsOptions = {
+    origin: '*',
+    optionsSuccessStatus: 200
+}
 
+const app = express();
+app.use(cors(corsOptions));
+
+app.use('/api', guest_routes);
 app.use('/api', users);
 app.use('/api', categories);
 app.use('/api', movies);
 app.use('/api', celebrities);
 app.use('/api', reviews);
 app.use('/api', roles);
+app.use('/api', movielists);
 
 function getCookies(req) {
     if (req.headers.cookie == null) return {};

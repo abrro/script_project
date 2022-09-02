@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
   up: async (queryInterface, DataTypes) => {
-    await queryInterface.createTable('Crews', {
+    await queryInterface.createTable('Listgroups', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -11,24 +11,18 @@ module.exports = {
       movieId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        onDelete: 'cascade',
         references:{
           model:'movies',
-          key:'id'
+          key:'id',
           }
       },
-      celebrityId: {
+      movielistsId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        onDelete: 'cascade',
         references:{
-          model:'celebrities',
-          key:'id'
-          }
-      },
-      roleId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references:{
-          model:'roles',
+          model:'movielists',
           key:'id'
           }
       },
@@ -40,15 +34,9 @@ module.exports = {
         allowNull: false,
         type: DataTypes.DATE
       }
-    // }, {
-    //   uniqueKeys : {
-    //     Items_unique: {
-    //       fields: ['movieId', 'celebrityId', 'roleId']
-    //     }
-    //   }
     });
   },
   down: async (queryInterface, DataTypes) => {
-    await queryInterface.dropTable('Crews');
+    await queryInterface.dropTable('Listgroups');
   }
 };

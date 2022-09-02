@@ -2,6 +2,7 @@ const express = require('express');
 const { sequelize, Reviews, Users } = require('../models');
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
+const e = require('express');
 require('dotenv').config();
 
 const route = express.Router();
@@ -12,7 +13,7 @@ function authToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
   
-    if (token == null) return res.status(401).json({ msg: err });
+    if (token == null) return res.status(401).json({ msg: 'Not authenticated' });
   
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
     
@@ -28,7 +29,7 @@ route.use(authToken);
 
 const scheme = Joi.object({
     comment : Joi.string().trim().max(200).required(),
-    stars: Joi.number().integer().min(1).max(10).required()
+    rating: Joi.number().integer().min(1).max(10).required()
 });
 
 route.get('/reviews', (req, res) => {
@@ -55,7 +56,7 @@ route.post('/reviews', (req, res) => {
     
     Users.findOne({ where: { id: req.user.userId } })
         .then( usr => {
-            if (usr.role = 'admin' || 'content_creator') {
+            if (usr.role == 'user') {
                 const result = scheme.validate(req.body);
                 const { value, error } = result; 
                 const valid = error == null;
@@ -79,24 +80,32 @@ route.put('/reviews/:id', (req, res) => {
 
     Users.findOne({ where: { id: req.user.userId } })
         .then( usr => {
-            if (usr.role = 'admin' || 'content_creator') {
-                const result = scheme.validate(req.body);
-                const { value, error } = result; 
-                const valid = error == null;
+            if (usr.role == 'user') {
+                Reviews.findOne({where : {id : id}})
+                .then(review => {
+                    if(review.userId == req.user.userId){
+                    const result = scheme.validate(req.body);
+                    const { value, error } = result; 
+                    const valid = error == null;
 
-                if(!valid){
-                    res.status(422).json({msg : error.details[0].message});
-                }else{
-                    Reviews.update(req.body, { where: { id: id } })
-                    .then( num => {
-                        if (num == 1){
-                            res.status(200).json({msg : "Update successful"});
-                        } else {
-                            res.status(404).json({msg : "Cannot update review with id :" + id + ". Resource might not exist."});
+                    if(!valid){
+                        res.status(422).json({msg : error.details[0].message});
+                    }else{
+                        Reviews.update(req.body, { where: { id: id } })
+                        .then( num => {
+                            if (num == 1){
+                                res.status(200).json({msg : "Update successful"});
+                            } else {
+                                res.status(404).json({msg : "Cannot update review with id :" + id + ". Resource might not exist."});
+                            }
+                        } )
+                        .catch( err => res.status(500).json(err) );
                         }
-                    } )
-                    .catch( err => res.status(500).json(err) );;
-                }
+                    }else{
+                        res.status(403).json({ msg: "Invalid credentials"});
+                    }
+                })
+                .catch( err => res.status(500).json(err) )
             } else {
                 res.status(403).json({ msg: "Invalid credentials"});
             }
@@ -109,16 +118,24 @@ route.delete('/reviews/:id', (req, res) => {
 
     Users.findOne({ where: { id: req.user.userId } })
         .then( usr => {
-            if (usr.role = 'admin' || 'content_creator') {
-                Reviews.destroy({ where: { id: id } })
-                    .then( num => {
-                        if (num == 1){
-                            res.status(200).json({msg : "Deletion successful"});
-                        } else {
-                            res.status(404).json({msg : "Cannot delete review with id :" + id + ". Resource might not exist."});
-                        }
-                    } )
-                    .catch( err => res.status(500).json(err) );
+            if (usr.role == 'user') {
+                Reviews.findOne({where : {id : id}})
+                .then(review => {
+                    if(review.userId == req.user.userId){
+                        Reviews.destroy({ where: { id: id } })
+                        .then( num => {
+                            if (num == 1){
+                                res.status(200).json({msg : "Deletion successful"});
+                            } else {
+                                res.status(404).json({msg : "Cannot delete review with id :" + id + ". Resource might not exist."});
+                            }
+                        } )
+                        .catch( err => res.status(500).json(err) );
+                    }else{
+                        res.status(403).json({ msg: "Invalid credentials"});
+                    }
+                })
+                .catch( err => res.status(500).json(err));
             } else {
                 res.status(403).json({ msg: "Invalid credentials"});
             }

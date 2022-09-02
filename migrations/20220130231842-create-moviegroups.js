@@ -1,38 +1,37 @@
 'use strict';
 module.exports = {
   up: async (queryInterface, DataTypes) => {
-    await queryInterface.createTable('Reviews', {
+    await queryInterface.createTable('Moviegroups', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: DataTypes.INTEGER
       },
-      summary:{
-        type: DataTypes.STRING,
-        allowNull: false
-      },
-      comment:{
-        type: DataTypes.STRING,
-        allowNull: false
-      },
-      rating: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-      },
       movieId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        onDelete: 'cascade',
         references:{
           model:'movies',
+          key:'id',
+          }
+      },
+      celebrityId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        onDelete: 'cascade',
+        references:{
+          model:'celebrities',
           key:'id'
           }
       },
-      userId: {
+      roleId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        onDelete: 'cascade',
         references:{
-          model:'users',
+          model:'roles',
           key:'id'
           }
       },
@@ -44,9 +43,15 @@ module.exports = {
         allowNull: false,
         type: DataTypes.DATE
       }
+      // }, {
+    //   uniqueKeys : {
+    //     Items_unique: {
+    //       fields: ['movieId', 'celebrityId', 'roleId']
+    //     }
+    //   }
     });
   },
   down: async (queryInterface, DataTypes) => {
-    await queryInterface.dropTable('Reviews');
+    await queryInterface.dropTable('Moviegroups');
   }
 };

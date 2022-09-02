@@ -13,8 +13,13 @@ module.exports = (sequelize, DataTypes) => {
       this.belongsTo(models.Categories, {foreignKey: 'categoryId', as: 'category'});
       this.hasMany(models.Reviews, { foreignKey: 'movieId', as: 'reviews', onDelete: 'cascade', hooks: true });
       
-      this.belongsToMany(models.Celebrities, {through: 'Crew', foreignKey: 'movieId', as: 'celebrities'});
-      this.belongsToMany(models.Roles, {through: 'Crew', foreignKey: 'movieId', as: 'roles'});
+      this.belongsToMany(models.Celebrities, {through: 'Moviegroups', foreignKey: 'movieId', as: 'celebrities'});
+      this.belongsToMany(models.Roles, {through: 'Moviegroups', foreignKey: 'movieId', as: 'roles'});
+
+      this.hasMany(models.Moviegroups, { foreignKey: 'movieId', as: 'moviegroups', onDelete: 'cascade', hooks: true });
+
+      this.belongsToMany(models.Movielists, {through: 'Listgroups', foreignKey: 'movieId', as: 'movielists'});
+      this.hasMany(models.Listgroups, { foreignKey: 'movieId', as: 'listgroups', onDelete: 'cascade', hooks: true });
     }
   };
   Movies.init({
@@ -30,10 +35,6 @@ module.exports = (sequelize, DataTypes) => {
     release_date: {
       type: DataTypes.DATEONLY,
       allowNull: false
-    },
-    rating: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0
     }
   }, {
     sequelize,

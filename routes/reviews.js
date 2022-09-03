@@ -28,6 +28,7 @@ function authToken(req, res, next) {
 route.use(authToken);
 
 const scheme = Joi.object({
+    summary : Joi.string().trim().max(50).required(),
     comment : Joi.string().trim().max(200).required(),
     rating: Joi.number().integer().min(1).max(10).required()
 });

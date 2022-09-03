@@ -1,5 +1,5 @@
 const express = require('express');
-const { sequelize, Movies, Roles, Celebrities, Reviews } = require('../models');
+const { sequelize, Movies, Categories , Roles, Celebrities, Reviews } = require('../models');
 const jwt = require('jsonwebtoken');
 const JoiBase = require('joi');
 const JoiDate = require('@hapi/joi-date');
@@ -100,7 +100,16 @@ route.get('/movies/:id', (req, res) => {
                     attributes: []
                 }
             }]
-        }, 'category']
+        }, 
+        {
+            model : Categories,
+            as :'category'
+        }, 
+        {
+            model : Reviews,
+            as : 'reviews',
+            include : ['user']
+        }]
     })
     .then( rows => res.json(rows) )
     .catch( err => res.status(500).json(err) );
